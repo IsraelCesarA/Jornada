@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora de Jornada</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Calculadora de Jornada de Trabalho</h1>
+
+    <div class="box">
+      <h2>Jornada Atual</h2>
+      <label>Tipo de Jornada:
+        <select id="tipoJornada">
+          <option value="440">07:20 (440 min)</option>
+          <option value="360">06:00 (360 min)</option>
+          <option value="240">04:00 (240 min)</option>
+        </select>
+      </label>
+      <label>Início: <input type="time" class="enter" id="inicio"></label>
+      <label>Início Intervalo: <input type="time" class="enter" id="inicioInt"></label>
+      <label>Fim Intervalo: <input type="time" class="enter" id="fimInt"></label>
+      <label>Fim Jornada: <input type="time" class="enter" id="fim"></label>
+      <label><input type="checkbox" id="feriado"> Jornada em Feriado (100% extra)</label>
+      <button onclick="calcularJornada()">Calcular Jornada</button>
+      <div class="resultado" id="resJornada"></div>
+    </div>
+
+    <div class="box">
+      <h2>Jornada Anterior</h2>
+      <label>Fim Jornada Anterior: <input type="time" class="enter" id="fimAnterior"></label>
+      <button onclick="verificarDescanso()">Verificar Descanso</button>
+      <div class="resultado" id="resDescanso"></div>
+    </div>
+
+    <div class="box">
+      <h2>Cálculo de Hora Extra</h2>
+      <label>Salário Mensal (R$): <input type="number" class="enter" id="salario" step="0.01"></label>
+      <label>Tipo Jornada Base:
+        <select id="jornadaExtra">
+          <option value="440">07:20</option>
+          <option value="360">06:00</option>
+          <option value="240">04:00</option>
+        </select>
+      </label>
+
+      <h3>Opção 1: Digitar horas extras</h3>
+      <label>Horas Extras (decimais): <input type="number" class="enter" id="horasExtras" step="0.1"></label>
+
+      <h3>Opção 2: Inserir jornada</h3>
+      <label>Início: <input type="time" class="enter" id="extraInicio"></label>
+      <label>Início Intervalo: <input type="time" class="enter" id="extraInicioInt"></label>
+      <label>Fim Intervalo: <input type="time" class="enter" id="extraFimInt"></label>
+      <label>Fim Jornada: <input type="time" class="enter" id="extraFim"></label>
+
+      <label>Tipo Extra:
+        <select id="tipoExtra">
+          <option value="1.5">50%</option>
+          <option value="2">100%</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="feriadoExtra"> Extra em Feriado (100%)</label>
+      <button onclick="calcularExtras()">Calcular Valor Extra</button>
+      <div class="resultado" id="resExtras"></div>
+    </div>
+    
+    <div class="box">
+        <h2>Cálculo de Férias</h2>
+        <label>Salário Base (R$): <input type="number" class="enter" id="salarioFerias" step="0.01"></label>
+        <label>
+          <input type="checkbox" id="venderFerias"> Vender 10 dias (abono pecuniário)
+        </label>
+        <button onclick="calcularFerias()">Calcular Férias</button>
+        <div class="resultado" id="resFerias"></div>
+    </div>
+
+    <div class="box">
+        <h2>Cálculo de Rescisão</h2>
+        <label>Salário Base (R$): <input type="number" class="enter" id="salarioRescisao" step="0.01"></label>
+        <label>Data de Admissão: <input type="date" class="enter" id="dataAdmissao"></label>
+        <label>Data de Rescisão: <input type="date" class="enter" id="dataRescisao"></label>
+        <label>Dias Trabalhados no Mês da Rescisão: <input type="number" class="enter" id="diasTrabalhados"></label>
+        <label>Férias Vencidas (meses): <input type="number" class="enter" id="feriasVencidas" value="0"></label>
+        <label>
+          <input type="checkbox" id="avisoPrevioIndenizado"> Aviso Prévio Indenizado
+        </label>
+        <button onclick="calcularRescisao()">Calcular Rescisão</button>
+        <div class="resultado" id="resRescisao"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
