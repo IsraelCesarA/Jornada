@@ -1,16 +1,43 @@
+# Calculadora de Jornada v2 — Arquivos
+
+Abaixo estão os 3 arquivos prontos para você copiar/baixar e substituir no seu projeto.
+
+---
+
+## index.html
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Calculadora de Jornada</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora de Jornada v2</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- jsPDF (gerar PDF) e SheetJS (opcional - Excel) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Calculadora de Jornada de Trabalho</h1>
+  <div class="topbar">
+    <h1>Calculadora de Jornada — v2</h1>
+    <div class="top-actions">
+      <button id="themeToggle">🌙</button>
+      <button id="exportPdf">Exportar PDF</button>
+      <button id="exportXlsx">Exportar Excel</button>
+    </div>
+  </div>
 
-    <div class="box">
-      <h2>Jornada Atual</h2>
+  <div class="container">
+    <nav class="tabs">
+      <button data-tab="jornada" class="active">Jornada & Extras</button>
+      <button data-tab="ferias">Férias</button>
+      <button data-tab="rescisao">Rescisão</button>
+      <button data-tab="resumo">Resumo / Histórico</button>
+    </nav>
+
+    <section id="jornada" class="tab active box">
+      <h2>Jornada</h2>
       <label>Tipo de Jornada:
         <select id="tipoJornada">
           <option value="440">07:20 (440 min)</option>
@@ -18,78 +45,527 @@
           <option value="240">04:00 (240 min)</option>
         </select>
       </label>
-      <label>Início: <input type="time" class="enter" id="inicio"></label>
-      <label>Início Intervalo: <input type="time" class="enter" id="inicioInt"></label>
-      <label>Fim Intervalo: <input type="time" class="enter" id="fimInt"></label>
-      <label>Fim Jornada: <input type="time" class="enter" id="fim"></label>
+      <div class="grid-4">
+        <label>Início: <input type="time" class="enter" id="inicio"></label>
+        <label>Início Intervalo: <input type="time" class="enter" id="inicioInt"></label>
+        <label>Fim Intervalo: <input type="time" class="enter" id="fimInt"></label>
+        <label>Fim Jornada: <input type="time" class="enter" id="fim"></label>
+      </div>
+
       <label><input type="checkbox" id="feriado"> Jornada em Feriado (100% extra)</label>
-      <button onclick="calcularJornada()">Calcular Jornada</button>
-      <div class="resultado" id="resJornada"></div>
-    </div>
 
-    <div class="box">
-      <h2>Jornada Anterior</h2>
-      <label>Fim Jornada Anterior: <input type="time" class="enter" id="fimAnterior"></label>
-      <button onclick="verificarDescanso()">Verificar Descanso</button>
-      <div class="resultado" id="resDescanso"></div>
-    </div>
+      <h3>Horas Extras</h3>
+      <div class="grid-3">
+        <label>Horas Extras (decimal): <input type="number" id="horasExtras" step="0.1"></label>
+        <label>Tipo Extra: <select id="tipoExtra"><option value="1.5">50%</option><option value="2">100%</option></select></label>
+        <label><input type="checkbox" id="feriadoExtra"> Extra em Feriado</label>
+      </div>
 
-    <div class="box">
-      <h2>Cálculo de Hora Extra</h2>
-      <label>Salário Mensal (R$): <input type="number" class="enter" id="salario" step="0.01"></label>
-      <label>Tipo Jornada Base:
-        <select id="jornadaExtra">
-          <option value="440">07:20</option>
-          <option value="360">06:00</option>
-          <option value="240">04:00</option>
-        </select>
-      </label>
+      <h3>Salário e FGTS</h3>
+      <div class="grid-3">
+        <label>Salário Mensal: <input type="text" id="salario" class="money"></label>
+        <label>Dependentes (IRRF): <input type="number" id="dependentes" value="0" min="0"></label>
+        <label>Pensão alimentícia (R$): <input type="text" id="pensao" class="money"></label>
+      </div>
 
-      <h3>Opção 1: Digitar horas extras</h3>
-      <label>Horas Extras (decimais): <input type="number" class="enter" id="horasExtras" step="0.1"></label>
+      <div class="actions">
+        <button id="calcJornadaBtn">Calcular Jornada</button>
+      </div>
 
-      <h3>Opção 2: Inserir jornada</h3>
-      <label>Início: <input type="time" class="enter" id="extraInicio"></label>
-      <label>Início Intervalo: <input type="time" class="enter" id="extraInicioInt"></label>
-      <label>Fim Intervalo: <input type="time" class="enter" id="extraFimInt"></label>
-      <label>Fim Jornada: <input type="time" class="enter" id="extraFim"></label>
+      <div id="resJornada" class="resultado"></div>
+    </section>
 
-      <label>Tipo Extra:
-        <select id="tipoExtra">
-          <option value="1.5">50%</option>
-          <option value="2">100%</option>
-        </select>
-      </label>
-      <label><input type="checkbox" id="feriadoExtra"> Extra em Feriado (100%)</label>
-      <button onclick="calcularExtras()">Calcular Valor Extra</button>
-      <div class="resultado" id="resExtras"></div>
-    </div>
-    
-    <div class="box">
-        <h2>Cálculo de Férias</h2>
-        <label>Salário Base (R$): <input type="number" class="enter" id="salarioFerias" step="0.01"></label>
-        <label>
-          <input type="checkbox" id="venderFerias"> Vender 10 dias (abono pecuniário)
-        </label>
-        <button onclick="calcularFerias()">Calcular Férias</button>
-        <div class="resultado" id="resFerias"></div>
-    </div>
+    <section id="ferias" class="tab box">
+      <h2>Férias</h2>
+      <div class="grid-3">
+        <label>Salário Base: <input type="text" id="salarioFerias" class="money"></label>
+        <label><input type="checkbox" id="venderFerias"> Vender 10 dias (abono)</label>
+        <label>FGTS sobre férias: <input type="checkbox" id="fgtsFerias" checked> (8%)</label>
+      </div>
 
-    <div class="box">
-        <h2>Cálculo de Rescisão</h2>
-        <label>Salário Base (R$): <input type="number" class="enter" id="salarioRescisao" step="0.01"></label>
-        <label>Data de Admissão: <input type="date" class="enter" id="dataAdmissao"></label>
-        <label>Data de Rescisão: <input type="date" class="enter" id="dataRescisao"></label>
-        <label>Dias Trabalhados no Mês da Rescisão: <input type="number" class="enter" id="diasTrabalhados"></label>
-        <label>Férias Vencidas (meses): <input type="number" class="enter" id="feriasVencidas" value="0"></label>
-        <label>
-          <input type="checkbox" id="avisoPrevioIndenizado"> Aviso Prévio Indenizado
-        </label>
-        <button onclick="calcularRescisao()">Calcular Rescisão</button>
-        <div class="resultado" id="resRescisao"></div>
-    </div>
+      <div class="actions">
+        <button id="calcFeriasBtn">Calcular Férias</button>
+      </div>
+      <div id="resFerias" class="resultado"></div>
+    </section>
+
+    <section id="rescisao" class="tab box">
+      <h2>Rescisão</h2>
+      <div class="grid-3">
+        <label>Salário Base: <input type="text" id="salarioRescisao" class="money"></label>
+        <label>Data de Admissão: <input type="date" id="dataAdmissao"></label>
+        <label>Data de Rescisão: <input type="date" id="dataRescisao"></label>
+      </div>
+      <div class="grid-3">
+        <label>Dias Trabalhados no mês: <input type="number" id="diasTrabalhados" min="0"></label>
+        <label>Férias Vencidas (meses): <input type="number" id="feriasVencidas" value="0" min="0"></label>
+        <label><input type="checkbox" id="avisoPrevioIndenizado"> Aviso Prévio Indenizado</label>
+      </div>
+
+      <div class="grid-3">
+        <label>FGTS (8%): <input type="checkbox" id="calcularFGTS" checked></label>
+        <label>Incluir multa FGTS 40% na rescisão: <input type="checkbox" id="multaFgts" checked></label>
+        <label>Pensão alimentícia (R$): <input type="text" id="pensaoRescisao" class="money"></label>
+      </div>
+
+      <div class="actions">
+        <button id="calcRescisaoBtn">Calcular Rescisão</button>
+      </div>
+      <div id="resRescisao" class="resultado"></div>
+    </section>
+
+    <section id="resumo" class="tab box">
+      <h2>Resumo & Histórico</h2>
+      <div id="resumoTabela"></div>
+      <div class="history-actions">
+        <button id="limparHistorico">Limpar Histórico</button>
+      </div>
+      <div id="historial" class="resultado"></div>
+    </section>
+
   </div>
 
   <script src="script.js"></script>
 </body>
 </html>
+```
+
+---
+
+## style.css
+
+```css
+:root{
+  --bg:#f4f4f4; --card:#fff; --accent:#007BFF; --success:#0b8a3e; --danger:#c0392b; --muted:#666;
+}
+[data-theme='dark']{ --bg:#121212; --card:#1e1e1e; --accent:#5aa9ff; --success:#47d07a; --danger:#ff6b6b; --muted:#bbb; color:#eee }
+*{box-sizing:border-box}
+body{font-family:Inter, Arial, sans-serif;background:var(--bg);margin:0;padding:12px;color:var(--muted)}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.topbar h1{margin:0;font-size:1.2rem;color:var(--muted)}
+.top-actions button{margin-left:6px}
+.container{max-width:1100px;margin:0 auto}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);background:var(--card);cursor:pointer}
+.tabs button.active{box-shadow:0 2px 8px rgba(0,0,0,0.08);border-color:var(--accent)}
+.box{background:var(--card);padding:14px;border-radius:10px;margin-bottom:12px;}
+.grid-3, .grid-4{display:grid;gap:8px;margin-bottom:8px}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+label{display:block;font-size:0.95rem;color:var(--muted)}
+input[type='text'], input[type='number'], input[type='time'], select, input[type='date']{padding:8px;border-radius:6px;border:1px solid rgba(0,0,0,0.08);width:100%}
+.actions{margin-top:8px}
+button{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+.resultado{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);padding:10px;border-left:6px solid var(--accent);margin-top:8px;color:var(--muted);}
+.resultado p{margin:6px 0}
+.resultado .bruto{color:var(--accent);font-weight:700}
+.resultado .desconto{color:var(--danger);}
+.resultado .liquido{color:var(--success);font-weight:700}
+.history-actions{margin-top:8px}
+.money{text-align:right}
+@media(max-width:700px){.grid-3,.grid-4{grid-template-columns:1fr}}
+```
+
+---
+
+## script.js
+
+```javascript
+// Calculadora v2 - script.js
+// Principais funcionalidades: moeda formatada, INSS/IRRF/FGTS, histórico, export PDF/XLSX, dark mode
+
+// ---------- Utilitários ----------
+const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+const numParse = (v) => {
+  if (!v && v !== 0) return 0;
+  if (typeof v === 'number') return v;
+  // remove tudo que não é dígito nem vírgula nem ponto
+  const cleaned = String(v).replace(/[^0-9,.-]/g, '').replace(/\./g, '').replace(',', '.');
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+
+function formatMoneyInput(el) {
+  el.addEventListener('input', () => {
+    const raw = el.value;
+    const n = numParse(raw);
+    if (raw === '' || raw === null) { el.value = ''; return; }
+    el.value = n === 0 ? '0,00' : fmt.format(n).replace('R$\xa0','R$ ');
+  });
+  // format on blur
+  el.addEventListener('blur', () => {
+    const n = numParse(el.value);
+    el.value = fmt.format(n).replace('R$\xa0','R$ ');
+  });
+}
+
+// Inicializa formatação automática
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.money').forEach(formatMoneyInput);
+});
+
+// ---------- Funções de cálculo INSS / IRRF (tabelas 2025 usadas anteriormente) ----------
+function calcularINSS(base) {
+  // base em número
+  base = Number(base || 0);
+  const faixas = [1412.00, 2666.68, 4000.03, 7786.02];
+  const aliquotas = [0.075, 0.09, 0.12, 0.14];
+  let restante = base;
+  let desconto = 0;
+  let prev = 0;
+  for (let i = 0; i < faixas.length; i++) {
+    const limite = faixas[i] - (faixas[i-1] || 0);
+    const parcela = Math.min(restante, limite);
+    if (parcela > 0) {
+      desconto += parcela * aliquotas[i];
+      restante -= parcela;
+    }
+  }
+  // teto aproximado (soma das faixas) - simplificação
+  const teto = 908.85; // valor aproximado do teto 2025
+  if (desconto > teto) desconto = teto;
+  return Number(desconto.toFixed(2));
+}
+
+function calcularIRRF(base, dependentes = 0, pensao = 0) {
+  // base: já com INSS deduzido
+  base = Number(base || 0);
+  dependentes = Number(dependentes || 0);
+  pensao = Number(pensao || 0);
+  const deducaoDependente = 239.29; // valor aproximado por dependente (exemplo 2025). Ajuste se necessário.
+  const baseTributavel = base - (deducaoDependente * dependentes) - pensao;
+  if (baseTributavel <= 2259.20) return 0;
+  if (baseTributavel <= 2826.65) return Number((baseTributavel * 0.075 - 169.44).toFixed(2));
+  if (baseTributavel <= 3751.05) return Number((baseTributavel * 0.15 - 381.44).toFixed(2));
+  if (baseTributavel <= 4664.68) return Number((baseTributavel * 0.225 - 662.77).toFixed(2));
+  return Number((baseTributavel * 0.275 - 896.00).toFixed(2));
+}
+
+// ---------- FGTS ----------
+function calcularFGTS(salario, incluirExtras = true) {
+  salario = Number(salario || 0);
+  return Number((salario * 0.08).toFixed(2));
+}
+
+// ---------- Helpers de tempo ----------
+function timeToMinutes(time) {
+  if (!time) return 0;
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function minutesToTime(min) {
+  const h = Math.floor(min / 60).toString().padStart(2, '0');
+  const m = (min % 60).toString().padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+function calcularPeriodoNoturno(inicio, fim) {
+  let total = 0;
+  const inicioNoturno = 22 * 60;
+  const fimNoturno = 5 * 60;
+  if (fim < inicio) fim += 24 * 60;
+  for (let t = inicio; t < fim; t++) {
+    let hora = t % (24 * 60);
+    if (hora >= inicioNoturno || hora < fimNoturno) total++;
+  }
+  return total;
+}
+
+// ---------- Cálculo Jornada/Extras ----------
+function calcularJornada() {
+  const salario = numParse(document.getElementById('salario').value);
+  const inicio = timeToMinutes(document.getElementById('inicio').value);
+  const inicioInt = timeToMinutes(document.getElementById('inicioInt').value);
+  const fimInt = timeToMinutes(document.getElementById('fimInt').value);
+  const fim = timeToMinutes(document.getElementById('fim').value);
+  const tipoJornada = parseInt(document.getElementById('tipoJornada').value);
+  const feriado = document.getElementById('feriado').checked;
+  const horasExtrasInput = parseFloat(document.getElementById('horasExtras').value) || 0;
+  const tipoExtra = parseFloat(document.getElementById('tipoExtra').value);
+  const feriadoExtra = document.getElementById('feriadoExtra').checked;
+
+  if (!salario) {
+    document.getElementById('resJornada').innerText = 'Preencha salário.'; return;
+  }
+
+  let total = 0;
+  if (inicio && fim) {
+    total = fim - inicio;
+    if (fimInt > inicioInt) total -= (fimInt - inicioInt);
+  }
+  const horasMes = tipoJornada === 440 ? 220 : tipoJornada === 360 ? 180 : 120;
+  const valorHora = salario / horasMes;
+
+  let horasExtras = horasExtrasInput;
+  if (!horasExtras) horasExtras = 0;
+
+  const valorExtra = valorHora * horasExtras * tipoExtra;
+  const noturnas = calcularPeriodoNoturno(inicio, fim) / 60;
+  const valorNoturno = valorHora * noturnas * 0.2;
+
+  // FGTS sobre extras
+  const fgtsExtras = calcularFGTS(valorExtra + valorNoturno);
+
+  const bruto = valorExtra + valorNoturno;
+  const inss = calcularINSS(bruto);
+  const dependentes = Number(document.getElementById('dependentes').value || 0);
+  const pensao = numParse(document.getElementById('pensao').value);
+  const irrf = calcularIRRF(bruto - inss, dependentes, pensao);
+  const liquido = bruto - inss - irrf;
+
+  const html = `
+    <p class="bruto">Valor bruto extras: ${fmt.format(bruto)}</p>
+    <p class="desconto">INSS: ${fmt.format(inss)} | IRRF: ${fmt.format(irrf)}</p>
+    <p>FGTS sobre extras (8%): ${fmt.format(fgtsExtras)}</p>
+    <p class="liquido">Valor líquido a receber: ${fmt.format(liquido)}</p>
+  `;
+  document.getElementById('resJornada').innerHTML = html;
+
+  salvarHistorico({tipo:'jornada', bruto, inss, irrf, liquido, fgts: fgtsExtras, timestamp: new Date().toISOString()});
+}
+
+// ---------- Cálculo Férias ----------
+function calcularFerias() {
+  const salario = numParse(document.getElementById('salarioFerias').value);
+  const venderFerias = document.getElementById('venderFerias').checked;
+  const incluirFGTS = document.getElementById('fgtsFerias').checked;
+  if (!salario) { document.getElementById('resFerias').innerText = 'Insira salário válido.'; return; }
+
+  const terco = salario / 3; // 1/3 constitucional
+  let valorFerias = salario + terco; // férias em 30 dias
+  let abono = 0;
+  if (venderFerias) {
+    abono = (salario / 30 * 10) + ((salario / 30 * 10) / 3);
+    valorFerias = (salario / 30 * 20) + ((salario / 30 * 20) / 3);
+  }
+  const totalReceber = valorFerias + abono;
+
+  // FGTS sobre férias
+  const fgts = incluirFGTS ? calcularFGTS(totalReceber) : 0;
+
+  // Descontos (INSS e IRRF)
+  const inss = calcularINSS(totalReceber);
+  const dependentes = Number(document.getElementById('dependentes').value || 0);
+  const pensao = numParse(document.getElementById('pensao').value);
+  const irrf = calcularIRRF(totalReceber - inss, dependentes, pensao);
+  const liquido = totalReceber - inss - irrf;
+
+  const html = `
+    <p>Valor férias (com 1/3): <strong class="bruto">${fmt.format(valorFerias)}</strong></p>
+    <p>Abono pecuniário: ${fmt.format(abono)}</p>
+    <p class="bruto">Total Bruto: ${fmt.format(totalReceber)}</p>
+    <p class="desconto">INSS: ${fmt.format(inss)} | IRRF: ${fmt.format(irrf)}</p>
+    <p>FGTS sobre férias: ${fmt.format(fgts)}</p>
+    <p class="liquido">Total Líquido: ${fmt.format(liquido)}</p>
+  `;
+  document.getElementById('resFerias').innerHTML = html;
+
+  salvarHistorico({tipo:'ferias', bruto: totalReceber, inss, irrf, liquido, fgts, timestamp: new Date().toISOString()});
+}
+
+// ---------- Cálculo Rescisão ----------
+function diferencaMeses(dataInicio, dataFim) {
+  let anos = dataFim.getFullYear() - dataInicio.getFullYear();
+  let meses = dataFim.getMonth() - dataInicio.getMonth();
+  let totalMeses = anos * 12 + meses;
+  if (dataFim.getDate() < dataInicio.getDate()) totalMeses -= 1;
+  return totalMeses;
+}
+
+function calcularRescisao() {
+  const salario = numParse(document.getElementById('salarioRescisao').value);
+  const dataAdmissao = new Date(document.getElementById('dataAdmissao').value);
+  const dataRescisao = new Date(document.getElementById('dataRescisao').value);
+  const diasTrabalhados = Number(document.getElementById('diasTrabalhados').value || 0);
+  const feriasVencidas = Number(document.getElementById('feriasVencidas').value || 0);
+  const avisoPrevioIndenizado = document.getElementById('avisoPrevioIndenizado').checked;
+  const calcularFGTScheckbox = document.getElementById('calcularFGTS').checked;
+  const multaFgts = document.getElementById('multaFgts').checked;
+  const pensao = numParse(document.getElementById('pensaoRescisao').value);
+
+  if (!salario || isNaN(dataAdmissao.getTime()) || isNaN(dataRescisao.getTime())) {
+    document.getElementById('resRescisao').innerText = 'Preencha salário e datas corretamente.'; return;
+  }
+  if (dataRescisao < dataAdmissao) { document.getElementById('resRescisao').innerText = 'Data de rescisão menor que admissão.'; return; }
+
+  const salarioDiario = salario / 30;
+  const totalMeses = diferencaMeses(dataAdmissao, dataRescisao);
+
+  // Saldo de salário
+  const saldoSalario = salarioDiario * diasTrabalhados;
+
+  // Férias proporcionais
+  const mesesFerias = totalMeses % 12;
+  const feriasProporcionaisBase = (salario / 12) * mesesFerias;
+  const feriasProporcionais = feriasProporcionaisBase + (feriasProporcionaisBase / 3);
+
+  // Férias vencidas
+  const valorFeriasVencidas = (salario * feriasVencidas) + ((salario * feriasVencidas) / 3);
+
+  // 13º proporcional
+  let mesesDecimo = dataRescisao.getMonth() + 1;
+  if (diasTrabalhados >= 15) mesesDecimo += 1;
+  const decimoTerceiroProporcional = (salario / 12) * mesesDecimo;
+
+  // Aviso prévio
+  let valorAvisoPrevio = 0;
+  if (avisoPrevioIndenizado) {
+    let anos = Math.floor(totalMeses / 12);
+    let diasAviso = 30 + Math.min(anos, 20) * 3;
+    if (diasAviso > 90) diasAviso = 90;
+    valorAvisoPrevio = (salario / 30) * diasAviso;
+  }
+
+  const totalBruto = saldoSalario + feriasProporcionais + valorFeriasVencidas + decimoTerceiroProporcional + valorAvisoPrevio;
+
+  // INSS/IRRF (obs: verbas estritamente indenizatórias podem ser isentas do INSS — simplificação: aplicamos INSS sobre o bruto total)
+  const inss = calcularINSS(totalBruto);
+  const dependentes = Number(document.getElementById('dependentes').value || 0);
+  const irrf = calcularIRRF(totalBruto - inss, dependentes, pensao);
+
+  // FGTS
+  const fgts = calcularFGTS(totalBruto);
+  const multa = multaFgts ? Number((fgts * 0.4).toFixed(2)) : 0;
+
+  const totalLiquido = totalBruto - inss - irrf;
+
+  const html = `
+    <p>Saldo de Salário: ${fmt.format(saldoSalario)}</p>
+    <p>Férias Proporcionais + 1/3: ${fmt.format(feriasProporcionais)}</p>
+    <p>Férias Vencidas + 1/3: ${fmt.format(valorFeriasVencidas)}</p>
+    <p>13º Proporcional: ${fmt.format(decimoTerceiroProporcional)}</p>
+    <p>Aviso Prévio Indenizado: ${fmt.format(valorAvisoPrevio)}</p>
+    <p class="bruto">Total Bruto: ${fmt.format(totalBruto)}</p>
+    <p class="desconto">INSS: ${fmt.format(inss)} | IRRF: ${fmt.format(irrf)}</p>
+    <p>FGTS (8%): ${fmt.format(fgts)} | Multa 40% FGTS: ${fmt.format(multa)}</p>
+    <p class="liquido">Total Líquido: ${fmt.format(totalLiquido)}</p>
+  `;
+  document.getElementById('resRescisao').innerHTML = html;
+
+  salvarHistorico({tipo:'rescisao', bruto: totalBruto, inss, irrf, liquido: totalLiquido, fgts, multa, timestamp: new Date().toISOString()});
+}
+
+// ---------- Histórico (localStorage) ----------
+function salvarHistorico(entry) {
+  const key = 'calc_v2_history';
+  const hist = JSON.parse(localStorage.getItem(key) || '[]');
+  hist.unshift(entry);
+  if (hist.length > 50) hist.pop();
+  localStorage.setItem(key, JSON.stringify(hist));
+  atualizarHistorico();
+}
+
+function atualizarHistorico() {
+  const key = 'calc_v2_history';
+  const hist = JSON.parse(localStorage.getItem(key) || '[]');
+  const cont = document.getElementById('historial');
+  if (!cont) return;
+  if (hist.length === 0) { cont.innerHTML = '<p>Nenhum histórico.</p>'; return; }
+  const rows = hist.map(h => {
+    const date = new Date(h.timestamp).toLocaleString();
+    return `<div class="hist-item"><strong>${h.tipo.toUpperCase()}</strong> — ${date} — Bruto: ${fmt.format(h.bruto || 0)} — Líquido: ${fmt.format(h.liquido || 0)}</div>`;
+  }).join('');
+  cont.innerHTML = rows;
+  // resumo tabela
+  const resumoCont = document.getElementById('resumoTabela');
+  resumoCont.innerHTML = `<p>Últimas ${hist.length} simulações salvas (mostradas abaixo)</p>`;
+}
+
+function limparHistorico() {
+  localStorage.removeItem('calc_v2_history');
+  atualizarHistorico();
+}
+
+// ---------- Export PDF / XLSX ----------
+async function exportPdf() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt' });
+  doc.setFontSize(12);
+  doc.text('Relatório - Calculadora v2', 40, 40);
+  const now = new Date();
+  doc.text('Data: ' + now.toLocaleString(), 40, 60);
+  // coletar resultados
+  const jornada = document.getElementById('resJornada').innerText;
+  const ferias = document.getElementById('resFerias').innerText;
+  const rescisao = document.getElementById('resRescisao').innerText;
+  let y = 90;
+  [jornada, ferias, rescisao].forEach(txt => {
+    doc.setFontSize(10);
+    const lines = doc.splitTextToSize(txt, 500);
+    doc.text(lines, 40, y);
+    y += (lines.length * 12) + 10;
+  });
+  doc.save('relatorio_calculadora_v2.pdf');
+}
+
+function exportXlsx() {
+  const hist = JSON.parse(localStorage.getItem('calc_v2_history') || '[]');
+  const ws_data = [['Tipo','Bruto','INSS','IRRF','Líquido','FGTS','Multa FGTS','Data']];
+  hist.forEach(h => {
+    ws_data.push([h.tipo, h.bruto || 0, h.inss || 0, h.irrf || 0, h.liquido || 0, h.fgts || 0, h.multa || 0, h.timestamp]);
+  });
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+  XLSX.utils.book_append_sheet(wb, ws, 'Histórico');
+  XLSX.writeFile(wb, 'historico_calculos.xlsx');
+}
+
+// ---------- UI e eventos ----------
+document.addEventListener('DOMContentLoaded', () => {
+  // tabs
+  document.querySelectorAll('.tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const target = btn.dataset.tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(target).classList.add('active');
+    });
+  });
+
+  document.getElementById('calcJornadaBtn').addEventListener('click', calcularJornada);
+  document.getElementById('calcFeriasBtn').addEventListener('click', calcularFerias);
+  document.getElementById('calcRescisaoBtn').addEventListener('click', calcularRescisao);
+
+  document.getElementById('limparHistorico').addEventListener('click', limparHistorico);
+  document.getElementById('exportPdf').addEventListener('click', exportPdf);
+  document.getElementById('exportXlsx').addEventListener('click', exportXlsx);
+
+  // theme toggle
+  const themeToggle = document.getElementById('themeToggle');
+  const currentTheme = localStorage.getItem('calc_v2_theme') || 'light';
+  setTheme(currentTheme);
+  themeToggle.addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+
+  // format money inputs initially
+  document.querySelectorAll('.money').forEach(el => {
+    if (!el.value) el.value = '';
+    formatMoneyInput(el);
+  });
+
+  // enter navigation
+  const inputs = document.querySelectorAll('.enter');
+  inputs.forEach((input, i) => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); const next = inputs[i+1]; if (next) next.focus(); }
+    });
+  });
+
+  atualizarHistorico();
+});
+
+function setTheme(theme) {
+  if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+  else document.documentElement.removeAttribute('data-theme');
+  localStorage.setItem('calc_v2_theme', theme);
+}
+
+// ---------- fim do script ----------
+```
+
+---
+
+> Observação: coloque esses 3 arquivos na mesma pasta (index.html, style.css, script.js). O `index.html` carrega jsPDF e SheetJS via CDN para gerar PDF/XLSX.
+
+Se quiser, eu já compacto os três arquivos em um *zip* e forneço um link para download — quer que eu gere o ZIP agora?
