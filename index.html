@@ -1,31 +1,24 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Calculadora de Jornada v2</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora Trabalhista Completa</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="topbar">
-    <h1>Calculadora de Jornada — v2</h1>
-    <div class="top-actions">
-      <button id="themeToggle">🌙</button>
-      <button id="exportPdf">Exportar PDF</button>
-      <button id="exportXlsx">Exportar Excel</button>
-    </div>
-  </div>
   <div class="container">
-    <nav class="tabs">
-      <button data-tab="jornada" class="active">Jornada & Extras</button>
-      <button data-tab="ferias">Férias</button>
-      <button data-tab="rescisao">Rescisão</button>
-      <button data-tab="resumo">Resumo / Histórico</button>
-    </nav>
-    <section id="jornada" class="tab active box">
-      <h2>Jornada</h2>
+    <h1>Calculadora Trabalhista</h1>
+
+    <div class="tab-container">
+        <button class="tab-button active" onclick="showTab('jornada')">Jornada</button>
+        <button class="tab-button" onclick="showTab('extras')">Hora Extra</button>
+        <button class="tab-button" onclick="showTab('ferias')">Férias</button>
+        <button class="tab-button" onclick="showTab('rescisao')">Rescisão</button>
+    </div>
+
+    <div class="box tab-content" id="jornada">
+      <h2>Jornada Atual e Descanso</h2>
       <label>Tipo de Jornada:
         <select id="tipoJornada">
           <option value="440">07:20 (440 min)</option>
@@ -33,65 +26,78 @@
           <option value="240">04:00 (240 min)</option>
         </select>
       </label>
-      <div class="grid-4">
-        <label>Início: <input type="time" class="enter" id="inicio"></label>
-        <label>Início Intervalo: <input type="time" class="enter" id="inicioInt"></label>
-        <label>Fim Intervalo: <input type="time" class="enter" id="fimInt"></label>
-        <label>Fim Jornada: <input type="time" class="enter" id="fim"></label>
-      </div>
+      <label>Início: <input type="time" class="enter" id="inicio"></label>
+      <label>Início Intervalo: <input type="time" class="enter" id="inicioInt"></label>
+      <label>Fim Intervalo: <input type="time" class="enter" id="fimInt"></label>
+      <label>Fim Jornada: <input type="time" class="enter" id="fim"></label>
       <label><input type="checkbox" id="feriado"> Jornada em Feriado (100% extra)</label>
-      <h3>Horas Extras</h3>
-      <div class="grid-3">
-        <label>Horas Extras (decimal): <input type="number" id="horasExtras" step="0.1"></label>
-        <label>Tipo Extra: <select id="tipoExtra"><option value="1.5">50%</option><option value="2">100%</option></select></label>
-        <label><input type="checkbox" id="feriadoExtra"> Extra em Feriado</label>
-      </div>
-      <h3>Salário e FGTS</h3>
-      <div class="grid-3">
-        <label>Salário Mensal: <input type="text" id="salario" class="money"></label>
-        <label>Dependentes (IRRF): <input type="number" id="dependentes" value="0" min="0"></label>
-        <label>Pensão alimentícia (R$): <input type="text" id="pensao" class="money"></label>
-      </div>
-      <div class="actions"><button id="calcJornadaBtn">Calcular Jornada</button></div>
-      <div id="resJornada" class="resultado"></div>
-    </section>
-    <section id="ferias" class="tab box">
-      <h2>Férias</h2>
-      <div class="grid-3">
-        <label>Salário Base: <input type="text" id="salarioFerias" class="money"></label>
-        <label><input type="checkbox" id="venderFerias"> Vender 10 dias (abono)</label>
-        <label>FGTS sobre férias: <input type="checkbox" id="fgtsFerias" checked> (8%)</label>
-      </div>
-      <div class="actions"><button id="calcFeriasBtn">Calcular Férias</button></div>
-      <div id="resFerias" class="resultado"></div>
-    </section>
-    <section id="rescisao" class="tab box">
-      <h2>Rescisão</h2>
-      <div class="grid-3">
-        <label>Salário Base: <input type="text" id="salarioRescisao" class="money"></label>
-        <label>Data de Admissão: <input type="date" id="dataAdmissao"></label>
-        <label>Data de Rescisão: <input type="date" id="dataRescisao"></label>
-      </div>
-      <div class="grid-3">
-        <label>Dias Trabalhados no mês: <input type="number" id="diasTrabalhados" min="0"></label>
-        <label>Férias Vencidas (meses): <input type="number" id="feriasVencidas" value="0" min="0"></label>
-        <label><input type="checkbox" id="avisoPrevioIndenizado"> Aviso Prévio Indenizado</label>
-      </div>
-      <div class="grid-3">
-        <label>FGTS (8%): <input type="checkbox" id="calcularFGTS" checked></label>
-        <label>Incluir multa FGTS 40%: <input type="checkbox" id="multaFgts" checked></label>
-        <label>Pensão alimentícia (R$): <input type="text" id="pensaoRescisao" class="money"></label>
-      </div>
-      <div class="actions"><button id="calcRescisaoBtn">Calcular Rescisão</button></div>
-      <div id="resRescisao" class="resultado"></div>
-    </section>
-    <section id="resumo" class="tab box">
-      <h2>Resumo & Histórico</h2>
-      <div id="resumoTabela"></div>
-      <div class="history-actions"><button id="limparHistorico">Limpar Histórico</button></div>
-      <div id="historial" class="resultado"></div>
-    </section>
+      <button onclick="calcularJornada()">Calcular Jornada</button>
+      <div class="resultado" id="resJornada"></div>
+      
+      <hr>
+      <h3>Verificar Descanso Interjornada</h3>
+      <label>Fim Jornada Anterior: <input type="time" class="enter" id="fimAnterior"></label>
+      <button onclick="verificarDescanso()">Verificar Descanso (Mínimo 11h)</button>
+      <div class="resultado" id="resDescanso"></div>
+    </div>
+
+
+    <div class="box tab-content hidden" id="extras">
+      <h2>Cálculo de Hora Extra</h2>
+      <label>Salário Mensal (R$): <input type="number" class="enter" id="salario" step="0.01"></label>
+      <label>Tipo Jornada Base:
+        <select id="jornadaExtra">
+          <option value="440">07:20 (220h/mês)</option>
+          <option value="360">06:00 (180h/mês)</option>
+          <option value="240">04:00 (120h/mês)</option>
+        </select>
+      </label>
+
+      <h3>Opção 1: Digitar horas extras</h3>
+      <label>Horas Extras (decimais): <input type="number" class="enter" id="horasExtras" step="0.1"></label>
+
+      <h3>Opção 2: Inserir jornada</h3>
+      <label>Início: <input type="time" class="enter" id="extraInicio"></label>
+      <label>Início Intervalo: <input type="time" class="enter" id="extraInicioInt"></label>
+      <label>Fim Intervalo: <input type="time" class="enter" id="extraFimInt"></label>
+      <label>Fim Jornada: <input type="time" class="enter" id="extraFim"></label>
+
+      <label>Tipo Extra:
+        <select id="tipoExtra">
+          <option value="1.5">50%</option>
+          <option value="2">100%</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="feriadoExtra"> Extra em Feriado (100%)</label>
+      <button onclick="calcularExtras()">Calcular Valor Extra</button>
+      <div class="resultado" id="resExtras"></div>
+    </div>
+    
+    <div class="box tab-content hidden" id="ferias">
+        <h2>Cálculo de Férias</h2>
+        <label>Salário Base (R$): <input type="number" class="enter" id="salarioFerias" step="0.01"></label>
+        <label>
+          <input type="checkbox" id="venderFerias"> Vender 10 dias (abono pecuniário)
+        </label>
+        <button onclick="calcularFerias()">Calcular Férias</button>
+        <div class="resultado" id="resFerias"></div>
+    </div>
+
+    <div class="box tab-content hidden" id="rescisao">
+        <h2>Cálculo de Rescisão</h2>
+        <label>Salário Base (R$): <input type="number" class="enter" id="salarioRescisao" step="0.01"></label>
+        <label>Data de Admissão: <input type="date" class="enter" id="dataAdmissao"></label>
+        <label>Data de Rescisão: <input type="date" class="enter" id="dataRescisao"></label>
+        <label>Dias Trabalhados no Mês da Rescisão: <input type="number" class="enter" id="diasTrabalhados"></label>
+        <label>Férias Vencidas (períodos completos): <input type="number" class="enter" id="feriasVencidas" value="0"></label>
+        <label>
+          <input type="checkbox" id="avisoPrevioIndenizado"> Aviso Prévio Indenizado
+        </label>
+        <button onclick="calcularRescisao()">Calcular Rescisão Bruta</button>
+        <div class="resultado" id="resRescisao"></div>
+    </div>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>
